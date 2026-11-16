@@ -225,11 +225,14 @@
     .key[data-state="present"] { background: var(--present); }
     .key[data-state="absent"] { background: var(--absent); }
     .footer-mark {
-      flex-shrink: 0; display: flex; align-items: center; justify-content: center;
-      gap: 9px; color: var(--muted); opacity: .85;
-      padding: 0 10px 11px; text-align: center; font-size: 10px; font-weight: 650; letter-spacing: .3px;
+      flex-shrink: 0; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 2px;
+      color: var(--muted); opacity: .9;
+      padding: 0 10px 11px; text-align: center; font-size: clamp(9px, 2.3vw, 11px);
+      font-weight: 650; letter-spacing: .15px; line-height: 1.3;
     }
-    .footer-mark::before, .footer-mark::after { content: '✧'; color: var(--accent); font-size: 13px; }
+    .footer-mark blockquote { margin: 0; max-width: 100%; }
+    .footer-mark cite { font-size: 10px; font-style: italic; font-weight: 500; }
     .toast {
       position: fixed; z-index: 50; top: 88px; left: 50%; transform: translateX(-50%);
       width: max-content; max-width: calc(100vw - 28px);
@@ -401,7 +404,10 @@
       </div>
       <div class="keyboard" id="keyboard" role="group" aria-label="Türkçe Q ekran klavyesi"></div>
     </div>
-    <div class="footer-mark">Yarın yine burada. Yeni bir kelimede buluşalım.</div>
+    <div class="footer-mark">
+      <blockquote>“Yarın da kimselere vermeyin yine birlikte olalım”</blockquote>
+      <cite>Mehmet Ali Birand</cite>
+    </div>
   </main>
 </div>
 
