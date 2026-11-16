@@ -7,7 +7,7 @@ A distinctive daily Turkish word ritual built with **plain HTML, CSS, and JavaSc
 - `index.html` — complete responsive game, styling, keyboard, animations, daily puzzle selection, save/resume, statistics, modes, and sharing.
 - `words.js` — editable answer and valid-guess dictionaries, with a fixed shuffle seed.
 
-The starter vocabulary has **764 candidate answers** and **968 valid guesses** (including every answer). It is a *starter dictionary*, not a fully reviewed, exhaustive Turkish lexicon. Before a major public launch, have native speakers and/or a Turkish lexicographer review the entire answer list, add at least 1,500 common words, and improve the valid-guess coverage. Check licensing if you import data from a third-party source.
+The game currently has **764 scheduled daily answers** and **5,421 accepted five-letter guesses**. The expanded guesses were merged from the user-provided `words(1).js` on 2026-11-16, including its candidate answers as guesses only. The existing daily answer list and shuffle seed are unchanged, preserving the daily puzzle sequence and saved games. The uploaded source contained 5,581 guess entries and 2,133 potential answer entries; after Turkish NFC normalization, deduplication, and the game's 29-letter alphabet checks, the merged list contains 5,421 distinct playable guesses. This is **not yet 50,000**. It is an expanded but still unreviewed dictionary. Before a major public launch, have native speakers and/or a Turkish lexicographer review the entire answer list, add at least 1,500 common words, and improve the valid-guess coverage. Check licensing if you import data from a third-party source.
 
 ## Test on a Mac (Safari)
 
@@ -46,7 +46,7 @@ The game rolls over at midnight Istanbul time, even while the tab is open, and s
 1. Open `words.js`.
 2. Add easy, recognizable, **exactly five-letter** Turkish words to `ANSWER_TEXT`. No proper names, vulgar words, unreasonably obscure words, or awkward inflected forms. Be especially careful with **I/İ and ı/i**.
 3. Add extra legitimate guesses to `EXTRA_GUESSES_TEXT`. This list can include less familiar words; they won't be selected as daily answers. Answers are automatically included in the `VALID_GUESSES` export.
-4. Separate entries with whitespace. The loader applies Unicode NFC normalization, Turkish locale uppercasing, deduplication, and 29-letter alphabet / five-code-point filtering.
+4. Separate entries with whitespace. The loader applies Unicode NFC normalization, Turkish locale uppercasing, deduplication, and 29-letter alphabet / five-code-point filtering. The imported guess list lives in `IMPORTED_GUESSES_TEXT` and is accepted for guesses only. Entries using circumflex letters (â/î/û), unsupported by the agreed 29-letter alphabet, are excluded rather than rewritten.
 5. Keep `SHUFFLE_SEED` fixed. **Do not reorder or add answers mid-day after launch without a planned migration:** changing the list changes the whole deterministic sequence, including today's answer. To expand later without breaking an existing schedule, consider a versioned answer schedule keyed by puzzle number, with published historic answers locked in.
 
 Your definitive launch dictionary should ideally contain 1,500+ hand-vetted answer words and a substantially larger, licensed and reviewed valid-guess dictionary. Turkish lexicographic sources may use circumflex marks (â, î, û); the current game intentionally accepts only the specified **29-letter Turkish alphabet**.
