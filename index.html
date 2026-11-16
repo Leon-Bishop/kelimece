@@ -1,0 +1,1149 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f6f4ed">
+  <meta name="description" content="Kelimece: Her gün herkes için aynı 5 harfli Türkçe kelime. Altı denemede bul, serini koru, sonucunu paylaş!">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="tr_TR">
+  <meta property="og:title" content="Kelimece — Günlük Türkçe Kelime Oyunu">
+  <meta property="og:description" content="5 harf, 6 deneme. Her gün aynı Türkçe kelime!">
+  <title>Kelimece — Günlük Türkçe Kelime Oyunu</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --page: #f6f4ed;
+      --surface: #fffefa;
+      --ink: #213834;
+      --muted: #73837e;
+      --line: #dddcd0;
+      --tile-line: #d9ded6;
+      --tile-filled-line: #627f78;
+      --key: #e7e9e2;
+      --key-text: #29453f;
+      --correct: #217665;
+      --present: #bf8a3c;
+      --absent: #72817d;
+      --accent: #d76d4e;
+      --accent-soft: #f7e5d9;
+      --modal: #fffefa;
+      --shadow: 0 20px 70px rgba(32,55,49,.14);
+      --radius: 10px;
+    }
+    html[data-theme="dark"] {
+      color-scheme: dark;
+      --page: #122522;
+      --surface: #1b312e;
+      --ink: #f5f5e9;
+      --muted: #b1c0b7;
+      --line: #39534c;
+      --tile-line: #465e56;
+      --tile-filled-line: #a7c9b5;
+      --key: #405b54;
+      --key-text: #fff8ea;
+      --correct: #258c78;
+      --present: #bc862f;
+      --absent: #536a66;
+      --accent: #f6ac83;
+      --accent-soft: #3a3b31;
+      --modal: #1b312e;
+      --shadow: 0 20px 70px rgba(0,0,0,.38);
+    }
+    html[data-contrast="high"] { --correct: #df6927; --present: #357ab4; }
+    *, *::before, *::after { box-sizing: border-box; }
+    html { min-height: 100%; }
+    body {
+      margin: 0;
+      min-height: 100%;
+      color: var(--ink);
+      background: var(--page);
+      background-image: radial-gradient(ellipse 54% 40% at 5% 65%, rgba(205,137,82,.048), transparent),
+        radial-gradient(ellipse 50% 45% at 94% 13%, rgba(29,111,103,.050), transparent);
+      font-family: -apple-system, BlinkMacSystemFont, "Avenir Next", "Segoe UI", Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      transition: background-color .2s, color .2s;
+      overscroll-behavior: none;
+    }
+    button { font: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    button:focus-visible, a:focus-visible, [role="switch"]:focus-visible {
+      outline: 3px solid var(--accent);
+      outline-offset: 3px;
+    }
+    button:disabled { cursor: not-allowed; }
+    .app { min-height: 100svh; display: flex; flex-direction: column; }
+    .topbar { flex-shrink: 0; border-bottom: 1px solid var(--line); background: var(--surface); }
+    .topbar-inner {
+      width: min(100%, 1060px);
+      height: 74px;
+      margin: auto;
+      padding: 0 clamp(12px, 4vw, 30px);
+      display: grid;
+      grid-template-columns: 100px 1fr 100px;
+      align-items: center;
+    }
+    .topbar-side { display: flex; gap: 5px; align-items: center; }
+    .topbar-side.right { justify-content: flex-end; }
+    .icon-btn {
+      width: 42px; height: 42px;
+      display: grid; place-items: center;
+      color: var(--ink); background: transparent; border: 1px solid transparent; border-radius: 13px;
+    }
+    .icon-btn:hover { background: var(--page); border-color: var(--line); }
+    .icon-btn svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+    .brand { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
+    .brand-topline { font-size: 8px; font-weight: 850; line-height: 1; letter-spacing: 2.4px; color: var(--muted); }
+    .brand-bottomline { display: flex; gap: 8px; align-items: center; }
+    .brand-icon { width: 25px; height: 25px; flex-shrink: 0; color: var(--accent); }
+    .wordmark {
+      margin: 0;
+      text-align: center;
+      font: 800 clamp(26px, 5vw, 32px)/1 Georgia, 'Times New Roman', serif;
+      letter-spacing: -1.8px;
+      white-space: nowrap;
+    }
+    .wordmark .dot { color: var(--accent); }
+    .game-content { flex: 1; display: flex; flex-direction: column; min-height: 0; width: 100%; }
+    .daily-header { flex-shrink: 0; text-align: center; padding: 19px 12px 3px; }
+    .daily-overline {
+      display: inline-flex; align-items: center; gap: 9px; justify-content: center;
+      color: var(--correct); font-size: 10px; font-weight: 850; letter-spacing: 2.2px;
+    }
+    .daily-overline::before, .daily-overline::after { content: ''; width: 25px; height: 1px; background: var(--line); }
+    .daily-title { margin: 8px auto 3px; font: 700 clamp(24px, 4vw, 32px)/1.15 Georgia, 'Times New Roman', serif; letter-spacing: -.75px; }
+    .daily-title-mark { color: var(--accent); font: 800 .75em/1 Georgia, serif; padding-left: 6px; }
+    .puzzle-label { font-size: 11px; color: var(--muted); font-weight: 700; letter-spacing: .7px; line-height: 1.45; }
+    .trail { display: flex; align-items: center; justify-content: center; gap: 8px; height: 20px; margin: 8px auto 0; }
+    .trail-step {
+      height: 8px; width: 8px; background: transparent; border: 1.5px solid var(--line); border-radius: 50%;
+      transform: rotate(45deg); transition: .2s ease;
+    }
+    .trail-step.current { height: 10px; width: 10px; background: var(--accent-soft); border: 2px solid var(--accent); }
+    .trail-step.done { height: 9px; width: 9px; background: var(--present); border-color: var(--present); }
+    .trail-step.excellent { background: var(--correct); border-color: var(--correct); }
+    .trail-step.won { background: var(--correct); border-color: var(--correct); width: 12px; height: 12px; }
+    .trail-step.lost { background: var(--absent); border-color: var(--absent); }
+    .board-region {
+      flex: 1 1 0;
+      min-height: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      padding: 5px 12px;
+    }
+    .board-region::before, .board-region::after { content: '✣'; position: absolute; color: var(--line); font-size: 16px; top: 50%; transform: translateY(-50%); pointer-events: none; }
+    .board-region::before { left: max(12px, calc(50% - 238px)); }
+    .board-region::after { right: max(12px, calc(50% - 238px)); }
+    .board {
+      width: min(342px, calc(100vw - 56px), max(204px, calc((100svh - 414px) * .78)));
+      aspect-ratio: 5 / 6;
+      display: grid;
+      grid-template-rows: repeat(6, minmax(0,1fr));
+      gap: 6px;
+      touch-action: manipulation;
+    }
+    .board:focus { outline: none; }
+    .board:focus-visible { outline: 2px solid var(--accent); outline-offset: 5px; }
+    .board-row { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; min-height: 0; }
+    .tile {
+      display: flex; align-items: center; justify-content: center;
+      border: 1.5px solid var(--tile-line);
+      border-radius: 11px;
+      color: var(--ink);
+      background: var(--surface);
+      font-weight: 850;
+      font-size: clamp(23px, 5.8vw, 32px);
+      line-height: 1;
+      user-select: none;
+      min-width: 0; min-height: 0;
+      transform-style: preserve-3d; backface-visibility: hidden;
+      box-shadow: 0 2px 0 rgba(19,55,46,.035);
+    }
+    .tile.filled { border-color: var(--tile-filled-line); box-shadow: 0 2px 0 rgba(33,118,101,.17); }
+    .tile[data-state="correct"], .tile[data-state="present"], .tile[data-state="absent"] { color: #fff; border-color: transparent; }
+    .tile[data-state="correct"] { background: var(--correct); }
+    .tile[data-state="present"] { background: var(--present); }
+    .tile[data-state="absent"] { background: var(--absent); }
+    .tile.pop { animation: tile-pop .13s ease-out; }
+    .tile.flip { animation: tile-flip .48s ease-in-out both; }
+    .tile.bounce { animation: tile-bounce .55s ease both; }
+    .board-row.shake { animation: row-shake .52s ease; }
+    @keyframes tile-pop { 0% { transform: scale(.86); } 100% { transform: scale(1); } }
+    @keyframes tile-flip { 0% { transform: rotateX(0); } 50% { transform: rotateX(90deg); } 100% { transform: rotateX(0); } }
+    @keyframes tile-bounce { 0%, 20%, 53%, 80%, 100% { transform: translateY(0); } 40%, 43% { transform: translateY(-18px); } 70% { transform: translateY(-8px); } 90% { transform: translateY(-3px); } }
+    @keyframes row-shake { 10%, 90% { transform: translateX(-1px); } 20%, 80% { transform: translateX(2px); } 30%, 50%, 70% { transform: translateX(-4px); } 40%, 60% { transform: translateX(4px); } }
+    .play-tools {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 16px; flex-shrink: 0;
+      width: min(100% - 30px, 444px);
+      margin: 2px auto 10px;
+      min-height: 35px;
+    }
+    .clue-btn {
+      display: inline-flex; gap: 8px; align-items: center; justify-content: center;
+      padding: 8px 11px;
+      border: 1px solid var(--line); border-radius: 999px;
+      background: var(--surface); color: var(--ink);
+      font-size: 12px; font-weight: 750;
+      white-space: nowrap;
+      box-shadow: 0 2px 0 rgba(25,44,38,.035);
+    }
+    .clue-btn svg { color: var(--accent); width: 16px; height: 16px; stroke-width: 2px; }
+    .clue-btn:not(:disabled):hover { border-color: var(--accent); }
+    .clue-btn.is-used { background: var(--accent-soft); border-color: var(--accent); cursor: default; }
+    .feedback-note {
+      flex: 1; text-align: right; color: var(--muted); font-size: 11px; line-height: 1.3;
+      min-width: 0; font-weight: 650;
+    }
+    .game-content.finished .play-tools { display: none; }
+    .bottom-region { flex-shrink: 0; padding: 0 8px max(9px, env(safe-area-inset-bottom)); width: 100%; }
+    .result-strip {
+      width: 100%; max-width: 530px; margin: 0 auto 10px;
+      text-align: center; min-height: 30px; font-size: 12px; line-height: 1.35; color: var(--muted);
+    }
+    .result-strip[hidden] { display: none; }
+    .result-strip strong { display: block; margin-bottom: 4px; color: var(--ink); font-size: 13px; }
+    .result-strip button { border: 0; background: none; color: var(--correct); padding: 0; font-weight: 800; text-decoration: underline; text-underline-offset: 3px; }
+    .keyboard { width: min(100%, 520px); margin: 0 auto; display: flex; flex-direction: column; gap: 7px; }
+    .keyboard-row { display: flex; width: 100%; gap: 4px; justify-content: center; }
+    .key {
+      display: grid; place-items: center; flex: 1 1 0; min-width: 0;
+      height: clamp(46px, 6.6svh, 57px); padding: 0;
+      border: 1px solid transparent; border-radius: 9px;
+      background: var(--key); color: var(--key-text);
+      font-size: clamp(12px, 3.4vw, 14px); font-weight: 850; user-select: none;
+      touch-action: manipulation;
+      transition: background-color .15s, color .15s, transform .1s;
+      box-shadow: 0 3px 0 rgba(27,55,47,.08);
+    }
+    .key.wide { flex-grow: 1.65; font-size: clamp(9px, 2.5vw, 12px); background: var(--ink); color: var(--surface); }
+    .key.backspace { font-size: 23px; }
+    .key:active { transform: translateY(2px); box-shadow: none; }
+    .key[data-state="correct"], .key[data-state="present"], .key[data-state="absent"] { color: #fff; }
+    .key[data-state="correct"] { background: var(--correct); }
+    .key[data-state="present"] { background: var(--present); }
+    .key[data-state="absent"] { background: var(--absent); }
+    .footer-mark {
+      flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+      gap: 9px; color: var(--muted); opacity: .85;
+      padding: 0 10px 11px; text-align: center; font-size: 10px; font-weight: 650; letter-spacing: .3px;
+    }
+    .footer-mark::before, .footer-mark::after { content: '✧'; color: var(--accent); font-size: 13px; }
+    .toast {
+      position: fixed; z-index: 50; top: 88px; left: 50%; transform: translateX(-50%);
+      width: max-content; max-width: calc(100vw - 28px);
+      background: var(--ink); color: var(--surface); border-radius: 12px;
+      padding: 12px 16px; font-size: 13px; font-weight: 800;
+      box-shadow: var(--shadow); pointer-events: none; text-align: center;
+    }
+    .toast[hidden] { display: none; }
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+    dialog {
+      position: fixed; width: min(480px, calc(100vw - 26px)); max-height: min(780px, calc(100dvh - 30px));
+      overflow-y: auto; border: 1px solid var(--line); border-top: 5px solid var(--accent);
+      border-radius: 18px; background: var(--modal); color: var(--ink); box-shadow: var(--shadow);
+      padding: 26px clamp(18px, 5vw, 30px) 28px; overscroll-behavior: contain;
+    }
+    dialog::backdrop { background: rgba(13,39,33,.58); backdrop-filter: blur(3px); }
+    .modal-header { display: flex; align-items: flex-start; justify-content: center; position: relative; margin-bottom: 23px; }
+    .modal-header h2 { margin: 0 35px; font-size: 17px; text-align: center; font-weight: 850; letter-spacing: 1px; }
+    .modal-close { position: absolute; right: -8px; top: -12px; width: 36px; height: 36px; border: 0; background: transparent; color: var(--muted); border-radius: 50%; font-size: 27px; line-height: 1; }
+    .modal-close:hover { background: var(--page); color: var(--ink); }
+    .rules-intro { margin: 0 0 15px; line-height: 1.6; font-size: 14px; }
+    .rules-list { margin: 0 0 18px; padding-left: 20px; font-size: 14px; line-height: 1.6; }
+    .rules-list li { margin-bottom: 5px; }
+    .rule-separator { height: 1px; background: var(--line); border: 0; margin: 18px 0; }
+    .examples-heading { font-size: 12px; font-weight: 850; letter-spacing: 1.2px; margin-bottom: 12px; color: var(--muted); }
+    .example-block { margin-bottom: 18px; }
+    .example-row { display: flex; gap: 4px; margin-bottom: 7px; }
+    .example-tile { width: 39px; height: 39px; display: grid; place-items: center; border: 1.5px solid var(--tile-line); background: var(--surface); border-radius: 7px; font-size: 19px; font-weight: 850; }
+    .example-tile.correct { background: var(--correct); color: white; border-color: var(--correct); }
+    .example-tile.present { background: var(--present); color: white; border-color: var(--present); }
+    .example-tile.absent { background: var(--absent); color: white; border-color: var(--absent); }
+    .example-block p { margin: 0; font-size: 13px; line-height: 1.45; }
+    .help-footer { font-size: 12px; font-weight: 800; margin: 14px 0 0; color: var(--correct); }
+    .primary-btn {
+      border: 0; border-radius: 10px; background: var(--correct); color: #fff;
+      font-weight: 850; font-size: 14px; letter-spacing: .4px;
+      padding: 14px 20px; min-height: 45px; width: 100%;
+    }
+    .primary-btn:hover { filter: brightness(.95); }
+    .stat-overview { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 7px; text-align: center; margin-bottom: 25px; }
+    .stat-number { font-size: clamp(23px, 6vw, 35px); font-weight: 800; line-height: 1.1; font-variant-numeric: tabular-nums; color: var(--correct); }
+    .stat-label { font-size: 11px; margin-top: 5px; line-height: 1.3; }
+    .stats-heading { text-align: center; font-size: 13px; letter-spacing: .8px; margin: 0 0 14px; }
+    .graph { display: flex; flex-direction: column; gap: 5px; max-width: 335px; margin: 0 auto 24px; }
+    .graph-row { display: grid; grid-template-columns: 18px 1fr; align-items: center; gap: 7px; font-size: 12px; }
+    .graph-number { text-align: center; font-weight: 800; }
+    .graph-track { min-width: 0; }
+    .graph-bar { background: var(--absent); color: #fff; min-width: 25px; height: 23px; display: flex; align-items: center; justify-content: flex-end; padding: 0 8px; font-size: 12px; font-weight: 750; border-radius: 5px; }
+    .graph-bar.today { background: var(--correct); }
+    .history-title { margin: 7px 0 9px; text-align: center; font-size: 11px; font-weight: 850; letter-spacing: 1.5px; color: var(--muted); }
+    .history-row { display: flex; justify-content: center; gap: 8px; margin-bottom: 24px; }
+    .history-day { width: 34px; text-align: center; }
+    .history-mark { width: 28px; height: 28px; display: grid; place-items: center; margin: 0 auto 6px; border: 1px solid var(--line); border-radius: 9px; background: var(--page); color: var(--muted); font-weight: 850; font-size: 13px; }
+    .history-mark.win { border-color: var(--correct); background: var(--correct); color: #fff; }
+    .history-mark.loss { border-color: var(--absent); background: var(--absent); color: #fff; }
+    .history-mark.today { box-shadow: 0 0 0 2px var(--accent); }
+    .history-caption { font-size: 9px; font-weight: 700; color: var(--muted); }
+    .stats-bottom { border-top: 1px solid var(--line); padding-top: 18px; text-align: center; }
+    .stats-countdown-label { font-weight: 850; letter-spacing: 1px; font-size: 11px; }
+    .stats-countdown { font-variant-numeric: tabular-nums; font-size: 30px; margin: 6px 0 15px; letter-spacing: 1px; }
+    .stats-before-play { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.55; }
+    .result-badge { display: inline-flex; align-items: center; gap: 7px; border: 1px solid var(--line); background: var(--page); padding: 8px 12px; border-radius: 30px; margin-bottom: 15px; font-weight: 850; font-size: 12px; }
+    .result-badge span { color: var(--accent); }
+    .setting-row { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 16px 0; border-bottom: 1px solid var(--line); }
+    .setting-title { font-size: 15px; font-weight: 850; margin-bottom: 4px; }
+    .setting-desc { color: var(--muted); font-size: 12px; line-height: 1.5; }
+    .switch { flex-shrink: 0; width: 48px; height: 27px; border: 0; border-radius: 25px; padding: 3px; background: var(--absent); transition: background-color .2s; }
+    .switch::after { content: ''; display: block; background: white; width: 21px; height: 21px; border-radius: 50%; transition: transform .2s; }
+    .switch[aria-checked="true"] { background: var(--correct); }
+    .switch[aria-checked="true"]::after { transform: translateX(21px); }
+    .switch:disabled { opacity: .45; }
+    .settings-note { font-size: 12px; color: var(--muted); line-height: 1.5; margin: 17px 0 0; }
+    .error-note { margin: 30px auto; width: min(440px,90%); color: #ad2222; text-align: center; }
+    @media (max-width: 699px) {
+      .board { width: min(314px, calc(100vw - 56px), max(204px, calc((100svh - 414px) * .78))); }
+    }
+    @media (max-height: 610px) {
+      .board { width: min(322px, calc(100vw - 56px), max(178px, calc((100svh - 414px) * .78))); }
+    }
+    @media (min-width: 700px) {
+      .board { width: min(342px, calc(100vw - 56px), max(204px, calc((100svh - 438px) * .76))); }
+      .daily-header { padding-top: 21px; }
+      .board-region::before, .board-region::after { font-size: 22px; }
+      .footer-mark { padding-top: 2px; }
+    }
+    @media (max-width: 380px) {
+      .topbar-inner { height: 66px; grid-template-columns: 74px 1fr 74px; padding: 0 7px; }
+      .icon-btn { width: 36px; height: 36px; }
+      .brand-icon { width: 21px; height: 21px; }
+      .brand-bottomline { gap: 4px; }
+      .wordmark { font-size: 26px; }
+      .daily-header { padding-top: 14px; }
+      .daily-title { font-size: 23px; margin-top: 6px; }
+      .trail { margin-top: 5px; }
+      .keyboard-row { gap: 3px; }
+      .bottom-region { padding-left: 5px; padding-right: 5px; }
+      .key { font-size: 12px; }
+      .key.wide { font-size: 9px; }
+      .board-region::before, .board-region::after { display: none; }
+      .play-tools { width: min(100% - 22px,444px); margin-bottom: 7px; }
+    }
+    @media (max-height: 735px) {
+      .topbar-inner { height: 58px; }
+      .daily-header { padding-top: 9px; }
+      .daily-title { margin-top: 3px; font-size: 23px; }
+      .trail { margin-top: 4px; }
+      .board-region { padding: 2px 12px; }
+      .play-tools { margin-bottom: 6px; min-height: 30px; }
+      .clue-btn { padding: 6px 9px; }
+      .key { height: clamp(39px, 6.5svh, 51px); }
+      .keyboard { gap: 5px; }
+      .footer-mark { padding-bottom: 5px; }
+      .result-strip { margin-bottom: 4px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+    }
+  </style>
+</head>
+<body>
+<div class="app" id="app">
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="topbar-side">
+        <button class="icon-btn" id="help-button" aria-label="Nasıl oynanır?" title="Nasıl Oynanır">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.3"/><path d="M9.5 9a2.6 2.6 0 0 1 5.1.6c0 1.8-2.6 2.1-2.6 4.3"/><path d="M12 17.5h.01" stroke-width="2.6"/></svg>
+        </button>
+      </div>
+      <div class="brand">
+        <div class="brand-topline">GÜNLÜK KELİME RİTÜELİ</div>
+        <div class="brand-bottomline">
+          <svg class="brand-icon" viewBox="0 0 32 32" aria-hidden="true" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M16 15C9.5 13.5 7 10.5 8.2 5.2c5.5 1.1 7.3 4.7 7.8 9.8ZM17 16c1.5-6.5 4.5-9 9.8-7.8-1.1 5.5-4.7 7.3-9.8 7.8ZM16 17c6.5 1.5 9 4.5 7.8 9.8-5.5-1.1-7.3-4.7-7.8-9.8ZM15 16c-1.5 6.5-4.5 9-9.8 7.8 1.1-5.5 4.7-7.3 9.8-7.8Z" fill="currentColor"/><circle cx="16" cy="16" r="2" fill="currentColor"/></svg>
+          <h1 class="wordmark">kelimece<span class="dot">.</span></h1>
+        </div>
+      </div>
+      <div class="topbar-side right">
+        <button class="icon-btn" id="stats-button" aria-label="İstatistikler" title="İstatistikler">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="12" width="4" height="8" rx=".4"/><rect x="10" y="7" width="4" height="13" rx=".4"/><rect x="16.5" y="3" width="4" height="17" rx=".4"/></svg>
+        </button>
+        <button class="icon-btn" id="settings-button" aria-label="Ayarlar" title="Ayarlar">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.2 2.8h3.6l.6 2.2c.5.2 1 .4 1.5.8l2-.9 2.5 2.5-.9 2c.4.5.6 1 .8 1.5l2.2.6v3.6l-2.2.6c-.2.5-.4 1-.8 1.5l.9 2-2.5 2.5-2-.9c-.5.4-1 .6-1.5.8l-.6 2.2h-3.6l-.6-2.2c-.5-.2-1-.4-1.5-.8l-2 .9-2.5-2.5.9-2c-.4-.5-.6-1-.8-1.5L1.5 15v-3.6l2.2-.6c.2-.5.4-1 .8-1.5l-.9-2 2.5-2.5 2 .9c.5-.4 1-.6 1.5-.8z" transform="translate(1 -1) scale(.9)"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="game-content" aria-label="Kelimece oyunu">
+    <div class="daily-header">
+      <div class="daily-overline">HER GÜN BİR KELİME</div>
+      <h2 class="daily-title">Bir kelime, bir iz<span class="daily-title-mark" aria-hidden="true">✳</span></h2>
+      <div class="puzzle-label" id="puzzle-label">GÜNÜN KELİMESİ</div>
+      <div class="trail" id="guess-trail" role="img" aria-label="Altı denemelik ilerleme"></div>
+    </div>
+    <div class="board-region">
+      <div class="board" id="board" role="grid" tabindex="-1" aria-label="6 satır ve 5 sütundan oluşan kelime tahtası"></div>
+    </div>
+    <div class="play-tools">
+      <button type="button" class="clue-btn" id="vowel-hint-button" aria-label="Ses İzi: bugünkü kelimenin sesli harf sayısını öğren">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M12 2.5 14.4 9.6 21.5 12l-7.1 2.4L12 21.5l-2.4-7.1L2.5 12l7.1-2.4L12 2.5Z"/></svg>
+        <span id="vowel-hint-label">Ses İzi · ipucu al</span>
+      </button>
+      <div class="feedback-note" id="feedback-note" aria-live="polite">İzini tahminlerinle bırak.</div>
+    </div>
+    <div class="bottom-region">
+      <div id="result-strip" class="result-strip" hidden>
+        <strong id="result-title"></strong>
+        <span>Sonraki kelime: <b id="board-countdown">00:00:00</b></span>
+        <span aria-hidden="true"> · </span><button type="button" id="result-stats">İstatistikler</button>
+      </div>
+      <div class="keyboard" id="keyboard" role="group" aria-label="Türkçe Q ekran klavyesi"></div>
+    </div>
+    <div class="footer-mark">Yarın yine burada. Yeni bir kelimede buluşalım.</div>
+  </main>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true" hidden></div>
+<p class="sr-only" id="screen-reader-message" aria-live="polite" aria-atomic="true"></p>
+
+<dialog id="help-dialog" aria-labelledby="help-title">
+  <div class="modal-header"><h2 id="help-title">NASIL OYNANIR</h2><button class="modal-close" data-close aria-label="Kapat">×</button></div>
+  <p class="rules-intro"><strong>Kelimece</strong>'de gizli 5 harfli kelimeyi <strong>6 denemede</strong> bulmaya çalış.</p>
+  <ul class="rules-list">
+    <li>Her tahmin 5 harfli, geçerli bir Türkçe kelime olmalı.</li>
+    <li>Her tahminden sonra kutuların rengi değişir.</li>
+    <li>Türkçe <strong>I / İ</strong> farklı harflerdir.</li>
+    <li><strong>Ses İzi</strong> ile günde bir kez kelimenin kaç sesli harf içerdiğini görebilirsin. Deneme hakkın azalmaz, ancak paylaşımında ipucu kullandığın belirtilir.</li>
+  </ul>
+  <hr class="rule-separator">
+  <div class="examples-heading">ÖRNEKLER</div>
+  <div class="example-block">
+    <div class="example-row" aria-hidden="true"><span class="example-tile correct">K</span><span class="example-tile">A</span><span class="example-tile">L</span><span class="example-tile">E</span><span class="example-tile">M</span></div>
+    <p><strong>K</strong> harfi kelimede var ve doğru yerde.</p>
+  </div>
+  <div class="example-block">
+    <div class="example-row" aria-hidden="true"><span class="example-tile">M</span><span class="example-tile present">A</span><span class="example-tile">S</span><span class="example-tile">A</span><span class="example-tile">L</span></div>
+    <p><strong>A</strong> harfi kelimede var ama farklı bir yerde.</p>
+  </div>
+  <div class="example-block">
+    <div class="example-row" aria-hidden="true"><span class="example-tile">B</span><span class="example-tile">A</span><span class="example-tile absent">L</span><span class="example-tile">O</span><span class="example-tile">N</span></div>
+    <p><strong>L</strong> harfi kelimede yok.</p>
+  </div>
+  <hr class="rule-separator">
+  <p class="help-footer">Her gün Türkiye saatiyle 00.00'da yeni bir kelime!</p>
+  <div style="height:16px"></div>
+  <button class="primary-btn" id="play-button" type="button">OYNA</button>
+</dialog>
+
+<dialog id="stats-dialog" aria-labelledby="stats-title">
+  <div class="modal-header"><h2 id="stats-title">İSTATİSTİKLER</h2><button class="modal-close" data-close aria-label="Kapat">×</button></div>
+  <div class="stat-overview" id="stat-overview"></div>
+  <h3 class="stats-heading">TAHMİN DAĞILIMI</h3>
+  <div class="graph" id="guess-graph" aria-label="Tahmin dağılımı"></div>
+  <div class="history-title">SON 7 GÜNÜN İZİ</div>
+  <div class="history-row" id="history-row" aria-label="Son yedi günün sonuçları"></div>
+  <div class="stats-bottom" id="stats-bottom"></div>
+</dialog>
+
+<dialog id="settings-dialog" aria-labelledby="settings-title">
+  <div class="modal-header"><h2 id="settings-title">AYARLAR</h2><button class="modal-close" data-close aria-label="Kapat">×</button></div>
+  <div class="setting-row">
+    <div><div class="setting-title">Zor Mod</div><div class="setting-desc">Açılan ipuçları sonraki tahminlerde kullanılmalı.</div></div>
+    <button type="button" class="switch" id="hard-switch" role="switch" aria-label="Zor mod" aria-checked="false"></button>
+  </div>
+  <div class="setting-row">
+    <div><div class="setting-title">Koyu Tema</div><div class="setting-desc">Karanlık ortamlar için.</div></div>
+    <button type="button" class="switch" id="dark-switch" role="switch" aria-label="Koyu tema" aria-checked="false"></button>
+  </div>
+  <div class="setting-row">
+    <div><div class="setting-title">Yüksek Kontrast</div><div class="setting-desc">Renk körlüğü için turuncu ve mavi.</div></div>
+    <button type="button" class="switch" id="contrast-switch" role="switch" aria-label="Yüksek kontrast" aria-checked="false"></button>
+  </div>
+  <p class="settings-note">Zor mod yalnızca ilk tahminden önce değiştirilebilir. İlerlemen ve istatistiklerin bu tarayıcıda saklanır.</p>
+</dialog>
+
+<script src="./words.js"></script>
+<script>
+(() => {
+  'use strict';
+
+  const DICTIONARY = window.KELIMECE_WORDS;
+  if (!DICTIONARY || !Array.isArray(DICTIONARY.ANSWERS) || DICTIONARY.ANSWERS.length < 200) {
+    document.getElementById('board').innerHTML = '<p class="error-note">Kelime listesi yüklenemedi. words.js dosyasının aynı klasörde olduğundan emin olun.</p>';
+    return;
+  }
+
+  const ROWS = 6;
+  const COLUMNS = 5;
+  const DAY_MS = 86400000;
+  const START_UTC_DAY = Date.UTC(2026, 0, 1) / DAY_MS;
+  const PREFIX = 'kelimece:v1:';
+  const ALPHABET = new Set(Array.from('ABCÇDEFGĞHIİJKLMNOÖPRSŞTUÜVYZ'));
+  const VOWELS = new Set(Array.from('AEIİOÖUÜ'));
+  const TURKISH_DATE = new Intl.DateTimeFormat('tr-TR', {timeZone:'Europe/Istanbul', day:'numeric', month:'long', weekday:'long'});
+  const BADGES = ['İlk bakış!', 'Parlak sezgi', 'İz ustası', 'Sıkı takip', 'Son viraj', 'Son anda!'];
+  const KEY_LAYOUT = [
+    ['E','R','T','Y','U','I','O','P','Ğ','Ü'],
+    ['A','S','D','F','G','H','J','K','L','Ş','İ'],
+    ['ENTER','Z','C','V','B','N','M','Ö','Ç','⌫'],
+  ];
+  const STATE_RANK = { absent: 1, present: 2, correct: 3 };
+  const STATE_LABELS = { absent: 'kelimede yok', present: 'yanlış yerde', correct: 'doğru yerde' };
+  const EMOJI = { absent: '⬛', present: '🟨', correct: '🟩' };
+  const WEEKDAY_DATE = new Intl.DateTimeFormat('en-US', { timeZone: 'Europe/Istanbul', year: 'numeric', month: '2-digit', day: '2-digit' });
+  const WORDS = shuffleOnce(DICTIONARY.ANSWERS, DICTIONARY.SHUFFLE_SEED);
+  const VALID_WORDS = new Set(DICTIONARY.VALID_GUESSES);
+  const board = document.getElementById('board');
+  const keyboard = document.getElementById('keyboard');
+  const tileEls = [];
+  const rowEls = [];
+  const keyEls = new Map();
+  const dialogs = {
+    help: document.getElementById('help-dialog'),
+    stats: document.getElementById('stats-dialog'),
+    settings: document.getElementById('settings-dialog'),
+  };
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let toastTimer = 0;
+  let isRevealing = false;
+  let game;
+  let dayInfo;
+  let answer;
+  let nextMidnight;
+  let stats = loadStats();
+  let settings = Object.assign({ hard: false, dark: false, contrast: false }, readJSON(PREFIX + 'settings', {}));
+  settings = { hard: settings.hard === true, dark: settings.dark === true, contrast: settings.contrast === true };
+
+  function readJSON(key, fallback) {
+    try { const raw = localStorage.getItem(key); return raw ? JSON.parse(raw) : fallback; }
+    catch { return fallback; }
+  }
+  function writeJSON(key, value) {
+    try { localStorage.setItem(key, JSON.stringify(value)); }
+    catch { /* Depolama engellense bile oyun çalışır. */ }
+  }
+  function readText(key) {
+    try { return localStorage.getItem(key); }
+    catch { return null; }
+  }
+  function writeText(key, value) {
+    try { localStorage.setItem(key, value); }
+    catch { /* Tarayıcı depolamayı engelleyebilir. */ }
+  }
+  function shuffleOnce(list, seed) {
+    const copy = [...list];
+    let state = seed >>> 0;
+    function random() {
+      state = (state + 0x6D2B79F5) | 0;
+      let t = Math.imul(state ^ (state >>> 15), 1 | state);
+      t ^= t + Math.imul(t ^ (t >>> 7), 61 | t);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    }
+    for (let i = copy.length - 1; i > 0; i--) {
+      const j = Math.floor(random() * (i + 1));
+      [copy[i], copy[j]] = [copy[j], copy[i]];
+    }
+    return copy;
+  }
+  function istanbulDay(at = new Date()) {
+    const components = {};
+    for (const part of WEEKDAY_DATE.formatToParts(at)) {
+      if (part.type === 'year' || part.type === 'month' || part.type === 'day') components[part.type] = Number(part.value);
+    }
+    const ordinal = Date.UTC(components.year, components.month - 1, components.day) / DAY_MS;
+    return { ...components, ordinal, index: ordinal - START_UTC_DAY, key: `${components.year}-${String(components.month).padStart(2, '0')}-${String(components.day).padStart(2, '0')}` };
+  }
+  // İleri saat kuralı değişirse bile İstanbul'daki gerçek sonraki gün başını bulur.
+  function findNextMidnight(now) {
+    const today = istanbulDay(new Date(now)).ordinal;
+    let low = now;
+    let high = now + 36 * 3600000;
+    while (high - low > 1000) {
+      const middle = Math.floor((low + high) / 2);
+      if (istanbulDay(new Date(middle)).ordinal === today) low = middle;
+      else high = middle;
+    }
+    return high;
+  }
+  function loadStats() {
+    const saved = readJSON(PREFIX + 'stats', {});
+    return {
+      played: Math.max(0, Number(saved.played) || 0),
+      wins: Math.max(0, Number(saved.wins) || 0),
+      streak: Math.max(0, Number(saved.streak) || 0),
+      maxStreak: Math.max(0, Number(saved.maxStreak) || 0),
+      distribution: Array.from({ length: 6 }, (_, i) => Math.max(0, Number(saved.distribution?.[i]) || 0)),
+      lastPlayedIndex: Number.isInteger(saved.lastPlayedIndex) ? saved.lastPlayedIndex : null,
+      lastWonIndex: Number.isInteger(saved.lastWonIndex) ? saved.lastWonIndex : null,
+      history: saved.history && typeof saved.history === 'object' && !Array.isArray(saved.history)
+        ? Object.fromEntries(Object.entries(saved.history).filter(([day, score]) => /^-?\d+$/.test(day) && Number.isInteger(score) && score >= 0 && score <= 6))
+        : {},
+    };
+  }
+  function updateStatsForFinish(won) {
+    // Preserve the daily stamp even for games finished before this update.
+    if (!Object.hasOwn(stats.history, dayInfo.index)) {
+      stats.history[dayInfo.index] = won ? game.guesses.length : 0;
+      for (const key of Object.keys(stats.history)) {
+        if (Number(key) < dayInfo.index - 60) delete stats.history[key];
+      }
+    }
+    if (stats.lastPlayedIndex === dayInfo.index) { writeJSON(PREFIX + 'stats', stats); return; }
+    stats.played++;
+    stats.lastPlayedIndex = dayInfo.index;
+    if (won) {
+      stats.wins++;
+      stats.streak = stats.lastWonIndex === dayInfo.index - 1 ? stats.streak + 1 : 1;
+      stats.maxStreak = Math.max(stats.maxStreak, stats.streak);
+      stats.lastWonIndex = dayInfo.index;
+      stats.distribution[game.guesses.length - 1]++;
+    } else {
+      stats.streak = 0;
+    }
+    writeJSON(PREFIX + 'stats', stats);
+  }
+  function makeNewSession() { return { guesses: [], input: '', status: 'playing', hintUsed: false }; }
+  function loadSession() {
+    const data = readJSON(PREFIX + 'game:' + dayInfo.key, null);
+    if (!data || !Array.isArray(data.guesses)) return makeNewSession();
+    const guesses = data.guesses
+      .filter((word) => typeof word === 'string' && VALID_WORDS.has(word) && Array.from(word).length === COLUMNS)
+      .slice(0, ROWS);
+    const won = guesses.includes(answer);
+    const status = won ? 'won' : guesses.length === ROWS ? 'lost' : 'playing';
+    const input = status === 'playing' && typeof data.input === 'string' &&
+      Array.from(data.input).length <= COLUMNS && Array.from(data.input).every((l) => ALPHABET.has(l)) ? data.input : '';
+    return { guesses, input, status, hintUsed: data.hintUsed === true };
+  }
+  function saveSession() { writeJSON(PREFIX + 'game:' + dayInfo.key, game); }
+  function initDay(initial = false) {
+    dayInfo = istanbulDay();
+    const wordIndex = ((dayInfo.index % WORDS.length) + WORDS.length) % WORDS.length;
+    answer = WORDS[wordIndex];
+    nextMidnight = findNextMidnight(Date.now());
+    game = loadSession();
+    isRevealing = false;
+    if (stats.lastWonIndex !== null && stats.lastWonIndex < dayInfo.index - 1 && stats.streak) {
+      stats.streak = 0;
+      writeJSON(PREFIX + 'stats', stats);
+    }
+    if (game.status !== 'playing') updateStatsForFinish(game.status === 'won');
+    document.getElementById('puzzle-label').textContent = `${TURKISH_DATE.format(new Date()).toLocaleUpperCase('tr-TR')} · #${dayInfo.index + 1}`;
+    renderBoard();
+    renderKeyboardColors();
+    renderResultStrip();
+    renderTrail();
+    renderHint();
+    renderFeedback();
+    updateSettingSwitches();
+    updateCountdown();
+    if (!initial) {
+      Object.values(dialogs).forEach((dialog) => { if (dialog.open) dialog.close(); });
+      toast('Yeni kelime hazır!');
+    }
+  }
+  function createBoard() {
+    for (let row = 0; row < ROWS; row++) {
+      const rowEl = document.createElement('div');
+      rowEl.className = 'board-row';
+      rowEl.setAttribute('role', 'row');
+      const tiles = [];
+      for (let col = 0; col < COLUMNS; col++) {
+        const tile = document.createElement('div');
+        tile.className = 'tile';
+        tile.setAttribute('role', 'gridcell');
+        tile.setAttribute('aria-label', `${row + 1}. satır ${col + 1}. kutu: boş`);
+        rowEl.appendChild(tile);
+        tiles.push(tile);
+      }
+      tileEls.push(tiles);
+      rowEls.push(rowEl);
+      board.appendChild(rowEl);
+    }
+  }
+  function createKeyboard() {
+    for (const layout of KEY_LAYOUT) {
+      const row = document.createElement('div');
+      row.className = 'keyboard-row';
+      for (const key of layout) {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'key';
+        button.textContent = key === 'ENTER' ? 'ENTER' : key;
+        button.setAttribute('aria-label', key === 'ENTER' ? 'Tahmini gönder' : key === '⌫' ? 'Son harfi sil' : `${key} harfi`);
+        if (key === 'ENTER' || key === '⌫') button.classList.add('wide');
+        if (key === '⌫') button.classList.add('backspace');
+        button.addEventListener('click', () => handleKey(key));
+        row.appendChild(button);
+        keyEls.set(key, button);
+      }
+      keyboard.appendChild(row);
+    }
+  }
+  function evaluate(guess, solution) {
+    const letters = Array.from(guess.normalize('NFC'));
+    const actual = Array.from(solution.normalize('NFC'));
+    const marks = Array(COLUMNS).fill('absent');
+    const remaining = new Map();
+    for (const letter of actual) remaining.set(letter, (remaining.get(letter) || 0) + 1);
+    for (let i = 0; i < COLUMNS; i++) {
+      if (letters[i] === actual[i]) {
+        marks[i] = 'correct';
+        remaining.set(letters[i], remaining.get(letters[i]) - 1);
+      }
+    }
+    for (let i = 0; i < COLUMNS; i++) {
+      if (marks[i] === 'correct') continue;
+      const left = remaining.get(letters[i]) || 0;
+      if (left > 0) {
+        marks[i] = 'present';
+        remaining.set(letters[i], left - 1);
+      }
+    }
+    return marks;
+  }
+  function paintTile(tile, rowIndex, colIndex, letter, mark = '') {
+    tile.textContent = letter || '';
+    tile.dataset.state = mark;
+    tile.classList.toggle('filled', Boolean(letter) && !mark);
+    tile.setAttribute('aria-label', `${rowIndex + 1}. satır ${colIndex + 1}. kutu: ${letter || 'boş'}${mark ? ', ' + STATE_LABELS[mark] : ''}`);
+  }
+  function renderBoard() {
+    for (let row = 0; row < ROWS; row++) {
+      const committed = game.guesses[row];
+      const letters = committed ? Array.from(committed) : row === game.guesses.length && game.status === 'playing' ? Array.from(game.input) : [];
+      const marks = committed ? evaluate(committed, answer) : [];
+      for (let col = 0; col < COLUMNS; col++) {
+        const tile = tileEls[row][col];
+        tile.classList.remove('pop', 'flip', 'bounce');
+        paintTile(tile, row, col, letters[col] || '', marks[col] || '');
+      }
+    }
+  }
+  function renderKeyboardColors() {
+    const known = new Map();
+    for (const guess of game.guesses) {
+      const marks = evaluate(guess, answer);
+      Array.from(guess).forEach((letter, col) => {
+        if ((STATE_RANK[marks[col]] || 0) > (STATE_RANK[known.get(letter)] || 0)) known.set(letter, marks[col]);
+      });
+    }
+    for (const [letter, button] of keyEls) {
+      button.dataset.state = known.get(letter) || '';
+      if (known.has(letter)) button.setAttribute('aria-label', `${letter} harfi, ${STATE_LABELS[known.get(letter)]}`);
+      else if (letter !== 'ENTER' && letter !== '⌫') button.setAttribute('aria-label', `${letter} harfi`);
+    }
+  }
+  function renderResultStrip() {
+    const finished = game.status !== 'playing';
+    document.getElementById('result-strip').hidden = !finished;
+    document.querySelector('.game-content').classList.toggle('finished', finished);
+    if (finished) {
+      document.getElementById('result-title').textContent = game.status === 'won' ? 'Bugünün kelimesini buldun! 🎉' : `Günün kelimesi: ${answer}`;
+    }
+  }
+  function renderTrail() {
+    const trail = document.getElementById('guess-trail');
+    trail.replaceChildren();
+    for (let i = 0; i < ROWS; i++) {
+      const mark = document.createElement('span');
+      mark.className = 'trail-step';
+      mark.setAttribute('aria-hidden', 'true');
+      if (i < game.guesses.length) {
+        const matches = evaluate(game.guesses[i], answer).filter((status) => status === 'correct').length;
+        mark.classList.add(i === game.guesses.length - 1 && game.status !== 'playing' ? game.status : matches >= 3 ? 'excellent' : 'done');
+      } else if (i === game.guesses.length && game.status === 'playing') {
+        mark.classList.add('current');
+      }
+      trail.appendChild(mark);
+    }
+    trail.setAttribute('aria-label', `${game.guesses.length} tahmin yapıldı, ${ROWS - game.guesses.length} deneme kaldı`);
+  }
+  function renderHint() {
+    const button = document.getElementById('vowel-hint-button');
+    const label = document.getElementById('vowel-hint-label');
+    button.classList.toggle('is-used', game.hintUsed);
+    button.disabled = game.hintUsed || game.status !== 'playing';
+    if (game.hintUsed) {
+      const count = Array.from(answer).filter((letter) => VOWELS.has(letter)).length;
+      label.textContent = `Ses İzi · ${count} sesli harf`;
+      button.setAttribute('aria-label', `Ses İzi: kelimede ${count} sesli harf var`);
+    } else if (game.status !== 'playing') {
+      label.textContent = 'Ses İzi · bugün kapandı';
+      button.setAttribute('aria-label', 'Ses İzi, oyun bittiği için kapalı');
+    } else {
+      label.textContent = 'Ses İzi · ipucu al';
+      button.setAttribute('aria-label', 'Ses İzi: bugünkü kelimenin sesli harf sayısını öğren');
+    }
+  }
+  function revealHint() {
+    if (isRevealing || game.status !== 'playing' || game.hintUsed) return;
+    game.hintUsed = true;
+    saveSession();
+    renderHint();
+    const message = document.getElementById('vowel-hint-label').textContent;
+    toast(message, 2900);
+    announce(`${message}. İpucu kullanıldı; deneme hakkın azalmadı.`);
+  }
+  function renderFeedback() {
+    const el = document.getElementById('feedback-note');
+    if (!game.guesses.length) { el.textContent = 'İzini tahminlerinle bırak.'; return; }
+    if (game.status === 'won') { el.textContent = `Günün mührü: ${BADGES[game.guesses.length - 1]}`; return; }
+    if (game.status === 'lost') { el.textContent = 'Yarın yeni bir iz seni bekliyor.'; return; }
+    const marks = evaluate(game.guesses.at(-1), answer);
+    const correct = marks.filter((m) => m === 'correct').length;
+    const present = marks.filter((m) => m === 'present').length;
+    el.textContent = `${correct} yerinde · ${present} yeri farklı`;
+  }
+  function updateCountdown() {
+    const remain = Math.max(0, Math.ceil((nextMidnight - Date.now()) / 1000));
+    const time = [Math.floor(remain / 3600), Math.floor((remain % 3600) / 60), remain % 60]
+      .map((value) => String(value).padStart(2, '0')).join(':');
+    document.getElementById('board-countdown').textContent = time;
+    const modalTime = document.getElementById('stats-countdown');
+    if (modalTime) modalTime.textContent = time;
+  }
+  function toast(message, duration = 1900) {
+    const element = document.getElementById('toast');
+    element.textContent = message;
+    element.hidden = false;
+    clearTimeout(toastTimer);
+    toastTimer = window.setTimeout(() => { element.hidden = true; }, duration);
+  }
+  function announce(message) { document.getElementById('screen-reader-message').textContent = message; }
+  function shakeRow(index) {
+    if (reducedMotion) return;
+    const row = rowEls[index];
+    row.classList.remove('shake');
+    void row.offsetWidth;
+    row.classList.add('shake');
+    setTimeout(() => row.classList.remove('shake'), 550);
+  }
+  function hardModeProblem(guess) {
+    const proposed = Array.from(guess);
+    const mustHave = new Map();
+    const correctPositions = new Map();
+    const forbiddenPositions = new Map();
+    for (const previous of game.guesses) {
+      const counts = new Map();
+      const marks = evaluate(previous, answer);
+      Array.from(previous).forEach((letter, i) => {
+        if (marks[i] === 'correct') correctPositions.set(i, letter);
+        if (marks[i] === 'present') {
+          if (!forbiddenPositions.has(i)) forbiddenPositions.set(i, new Set());
+          forbiddenPositions.get(i).add(letter);
+        }
+        if (marks[i] !== 'absent') counts.set(letter, (counts.get(letter) || 0) + 1);
+      });
+      for (const [letter, count] of counts) mustHave.set(letter, Math.max(mustHave.get(letter) || 0, count));
+    }
+    for (const [i, letter] of correctPositions) {
+      if (proposed[i] !== letter) return `Zor mod: ${i + 1}. harf ${letter} olmalı`;
+    }
+    for (const [i, letters] of forbiddenPositions) {
+      if (letters.has(proposed[i])) return `Zor mod: ${proposed[i]} harfi ${i + 1}. sırada olamaz`;
+    }
+    for (const [letter, minimum] of mustHave) {
+      const count = proposed.filter((l) => l === letter).length;
+      if (count < minimum) return `Zor mod: en az ${minimum} tane ${letter} kullanmalısın`;
+    }
+    return '';
+  }
+  function handleKey(rawKey) {
+    if (isRevealing || !game || game.status !== 'playing' || Object.values(dialogs).some((dialog) => dialog.open)) return;
+    const key = rawKey === '⌫' || rawKey === 'Backspace' ? 'Backspace' :
+      rawKey === 'ENTER' || rawKey === 'Enter' ? 'Enter' : rawKey.normalize('NFC').toLocaleUpperCase('tr-TR').normalize('NFC');
+    const row = game.guesses.length;
+    if (key === 'Backspace') {
+      const letters = Array.from(game.input);
+      if (!letters.length) return;
+      const index = letters.length - 1;
+      letters.pop();
+      game.input = letters.join('');
+      paintTile(tileEls[row][index], row, index, '', '');
+      saveSession();
+    } else if (key === 'Enter') {
+      if (Array.from(game.input).length < COLUMNS) { toast('Yeterli harf yok'); shakeRow(row); return; }
+      if (!VALID_WORDS.has(game.input)) { toast('Kelime listesinde yok'); shakeRow(row); return; }
+      if (settings.hard && game.guesses.length) {
+        const problem = hardModeProblem(game.input);
+        if (problem) { toast(problem, 2600); shakeRow(row); return; }
+      }
+      submitGuess();
+    } else if (ALPHABET.has(key) && Array.from(game.input).length < COLUMNS) {
+      const col = Array.from(game.input).length;
+      game.input += key;
+      const tile = tileEls[row][col];
+      paintTile(tile, row, col, key);
+      if (!reducedMotion) {
+        tile.classList.remove('pop');
+        void tile.offsetWidth;
+        tile.classList.add('pop');
+      }
+      saveSession();
+    }
+  }
+  function submitGuess() {
+    const row = game.guesses.length;
+    const guess = game.input;
+    const marks = evaluate(guess, answer);
+    game.guesses.push(guess);
+    game.input = '';
+    const won = guess === answer;
+    const lost = game.guesses.length === ROWS && !won;
+    if (won || lost) {
+      game.status = won ? 'won' : 'lost';
+      updateStatsForFinish(won);
+    }
+    saveSession();
+    isRevealing = true;
+    const currentDay = dayInfo.key;
+    const finish = () => {
+      if (currentDay !== dayInfo.key) return;
+      isRevealing = false;
+      renderKeyboardColors();
+      renderResultStrip();
+      renderTrail();
+      renderHint();
+      renderFeedback();
+      updateSettingSwitches();
+      const detail = marks.map((mark, i) => `${Array.from(guess)[i]} ${STATE_LABELS[mark]}`).join(', ');
+      announce(`${row + 1}. tahmin: ${detail}.`);
+      if (won || lost) {
+        if (won) {
+          const messages = ['Dâhi!', 'Muhteşem!', 'Harika!', 'Çok iyi!', 'Güzel!', 'Başardın!'];
+          toast(messages[row], 2600);
+          if (!reducedMotion) tileEls[row].forEach((tile, i) => setTimeout(() => {
+            if (currentDay === dayInfo.key) tile.classList.add('bounce');
+          }, i * 95));
+        } else toast(`Kelime: ${answer}`, 3000);
+        setTimeout(() => {
+          if (currentDay === dayInfo.key && !Object.values(dialogs).some((d) => d.open)) openDialog('stats');
+        }, reducedMotion ? 350 : 1100);
+      }
+    };
+    if (reducedMotion) {
+      marks.forEach((mark, i) => paintTile(tileEls[row][i], row, i, Array.from(guess)[i], mark));
+      finish();
+      return;
+    }
+    marks.forEach((mark, i) => {
+      const tile = tileEls[row][i];
+      setTimeout(() => {
+        if (currentDay === dayInfo.key) tile.classList.add('flip');
+      }, i * 245);
+      setTimeout(() => {
+        if (currentDay === dayInfo.key) paintTile(tile, row, i, Array.from(guess)[i], mark);
+      }, i * 245 + 235);
+    });
+    setTimeout(finish, (COLUMNS - 1) * 245 + 510);
+  }
+  function drawStats() {
+    const winPercent = stats.played ? Math.round(stats.wins * 100 / stats.played) : 0;
+    const summary = [
+      [stats.played, 'Oynanan'],
+      [winPercent, 'Kazanma %'],
+      [stats.streak, 'Güncel seri'],
+      [stats.maxStreak, 'En iyi seri'],
+    ];
+    const overview = document.getElementById('stat-overview');
+    overview.replaceChildren();
+    for (const [number, label] of summary) {
+      const cell = document.createElement('div');
+      const n = document.createElement('div');
+      const l = document.createElement('div');
+      n.className = 'stat-number'; n.textContent = number;
+      l.className = 'stat-label'; l.textContent = label;
+      cell.append(n, l);
+      overview.appendChild(cell);
+    }
+    const graph = document.getElementById('guess-graph');
+    graph.replaceChildren();
+    const max = Math.max(1, ...stats.distribution);
+    for (let i = 0; i < 6; i++) {
+      const line = document.createElement('div');
+      line.className = 'graph-row';
+      const number = document.createElement('span');
+      number.className = 'graph-number';
+      number.textContent = i + 1;
+      const track = document.createElement('div');
+      track.className = 'graph-track';
+      const bar = document.createElement('div');
+      bar.className = 'graph-bar';
+      const todaysResult = game.status === 'won' && game.guesses.length === i + 1;
+      if (todaysResult) bar.classList.add('today');
+      bar.style.width = `${Math.max(8, stats.distribution[i] / max * 100)}%`;
+      bar.textContent = stats.distribution[i];
+      line.setAttribute('aria-label', `${i + 1} tahminde ${stats.distribution[i]} galibiyet${todaysResult ? ', bugünün sonucu' : ''}`);
+      track.appendChild(bar);
+      line.append(number, track);
+      graph.appendChild(line);
+    }
+    const history = document.getElementById('history-row');
+    history.replaceChildren();
+    for (let i = 6; i >= 0; i--) {
+      const dayIndex = dayInfo.index - i;
+      const score = stats.history[dayIndex];
+      const day = document.createElement('div'); day.className = 'history-day';
+      const stamp = document.createElement('div'); stamp.className = 'history-mark';
+      if (i === 0) stamp.classList.add('today');
+      if (score === 0) stamp.classList.add('loss');
+      else if (score >= 1 && score <= 6) stamp.classList.add('win');
+      stamp.textContent = score === 0 ? '×' : score ? score : '·';
+      const label = document.createElement('div'); label.className = 'history-caption';
+      label.textContent = new Date((START_UTC_DAY + dayIndex) * DAY_MS).getUTCDate();
+      day.setAttribute('aria-label', `${label.textContent}. gün: ${score === 0 ? 'bulunamadı' : score ? score + ' tahminde bulundu' : 'oynanmadı'}`);
+      day.append(stamp, label);
+      history.appendChild(day);
+    }
+    const bottom = document.getElementById('stats-bottom');
+    bottom.replaceChildren();
+    if (game.status !== 'playing') {
+      const badge = document.createElement('div');
+      badge.className = 'result-badge';
+      const star = document.createElement('span'); star.textContent = '✳';
+      const name = document.createElement('b');
+      name.textContent = game.status === 'won' ? `Günün mührü: ${BADGES[game.guesses.length - 1]}` : 'Yarın yeni bir sayfa';
+      badge.append(star, name);
+      bottom.appendChild(badge);
+      const caption = document.createElement('div');
+      caption.className = 'stats-countdown-label';
+      caption.textContent = 'SONRAKİ KELİME';
+      const countdown = document.createElement('div');
+      countdown.className = 'stats-countdown';
+      countdown.id = 'stats-countdown';
+      const button = document.createElement('button');
+      button.className = 'primary-btn';
+      button.textContent = 'PAYLAŞ';
+      button.addEventListener('click', shareResult);
+      bottom.append(caption, countdown, button);
+      updateCountdown();
+    } else {
+      const note = document.createElement('p');
+      note.className = 'stats-before-play';
+      note.textContent = 'Tahminlerini tamamladıktan sonra sonucunu paylaşabilir ve sonraki kelimeye kalan süreyi görebilirsin.';
+      bottom.appendChild(note);
+    }
+  }
+  function shareText() {
+    const score = game.status === 'won' ? game.guesses.length : 'X';
+    const lines = game.guesses.map((guess) => evaluate(guess, answer).map((mark) => EMOJI[mark]).join(''));
+    const pageURL = location.protocol === 'http:' || location.protocol === 'https:' ? location.origin + location.pathname : '';
+    const signature = game.status === 'won' ? `✳ ${BADGES[game.guesses.length - 1]}` : '✳ Yarın yeniden';
+    const hintTag = game.hintUsed ? '\n◇ Ses İzi kullanıldı' : '';
+    return `Kelimece #${dayInfo.index + 1} ${score}/6\n\n${lines.join('\n')}\n${signature}${hintTag}${pageURL ? '\n\n' + pageURL : ''}`;
+  }
+  async function shareResult() {
+    if (game.status === 'playing') return;
+    const text = shareText();
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: 'Kelimece', text });
+        return;
+      } catch (error) {
+        if (error.name === 'AbortError') return;
+      }
+    }
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(text);
+      } else {
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.focus();
+        textarea.select();
+        const copied = document.execCommand('copy');
+        textarea.remove();
+        if (!copied) throw new Error('Kopyalanamadı');
+      }
+      toast('Sonuç panoya kopyalandı!');
+    } catch { toast('Paylaşılamadı. Tarayıcı izinlerini kontrol et.'); }
+  }
+  function openDialog(which) {
+    const dialog = dialogs[which];
+    if (!dialog) return;
+    if (which === 'stats') drawStats();
+    if (which === 'settings') updateSettingSwitches();
+    Object.values(dialogs).forEach((other) => { if (other !== dialog && other.open) other.close(); });
+    if (!dialog.open) dialog.showModal();
+  }
+  function applySettings() {
+    document.documentElement.dataset.theme = settings.dark ? 'dark' : 'light';
+    document.documentElement.dataset.contrast = settings.contrast ? 'high' : 'normal';
+    document.querySelector('meta[name="theme-color"]').setAttribute('content', settings.dark ? '#122522' : '#f6f4ed');
+    writeJSON(PREFIX + 'settings', settings);
+    updateSettingSwitches();
+  }
+  function updateSettingSwitches() {
+    for (const [name, id] of [['hard', 'hard-switch'], ['dark', 'dark-switch'], ['contrast', 'contrast-switch']]) {
+      const element = document.getElementById(id);
+      element.setAttribute('aria-checked', settings[name] ? 'true' : 'false');
+      if (name === 'hard') element.disabled = Boolean(game?.guesses.length);
+    }
+  }
+  function bindEvents() {
+    document.getElementById('help-button').addEventListener('click', () => openDialog('help'));
+    document.getElementById('stats-button').addEventListener('click', () => openDialog('stats'));
+    document.getElementById('settings-button').addEventListener('click', () => openDialog('settings'));
+    document.getElementById('result-stats').addEventListener('click', () => openDialog('stats'));
+    document.getElementById('play-button').addEventListener('click', () => { dialogs.help.close(); board.focus({ preventScroll: true }); });
+    document.getElementById('vowel-hint-button').addEventListener('click', revealHint);
+    for (const dialog of Object.values(dialogs)) {
+      dialog.querySelectorAll('[data-close]').forEach((button) => button.addEventListener('click', () => dialog.close()));
+      dialog.addEventListener('click', (event) => { if (event.target === dialog) dialog.close(); });
+    }
+    for (const [name, id] of [['hard', 'hard-switch'], ['dark', 'dark-switch'], ['contrast', 'contrast-switch']]) {
+      document.getElementById(id).addEventListener('click', () => {
+        if (name === 'hard' && game.guesses.length) { toast('Zor mod yalnızca ilk tahminden önce değişir.'); return; }
+        settings[name] = !settings[name];
+        applySettings();
+      });
+    }
+    document.addEventListener('keydown', (event) => {
+      if (event.metaKey || event.ctrlKey || event.altKey || event.isComposing) return;
+      if (Object.values(dialogs).some((dialog) => dialog.open)) return;
+      if (event.target instanceof HTMLElement && event.target.closest('input, textarea, select, [contenteditable="true"]')) return;
+      if (event.key === 'Enter' || event.key === 'Backspace') {
+        // Düğme odaktayken Enter'ın hem tuş olayını hem tıklamayı tetiklemesini önle.
+        if (event.target instanceof HTMLElement && event.target.closest('button')) return;
+        event.preventDefault();
+        handleKey(event.key);
+      } else if (Array.from(event.key.normalize('NFC')).length === 1) {
+        const letter = event.key.normalize('NFC').toLocaleUpperCase('tr-TR').normalize('NFC');
+        if (ALPHABET.has(letter)) { event.preventDefault(); handleKey(letter); }
+      }
+    });
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden && istanbulDay().key !== dayInfo.key) initDay();
+    });
+  }
+
+  createBoard();
+  createKeyboard();
+  bindEvents();
+  applySettings();
+  initDay(true);
+  if (!readText(PREFIX + 'seen-help')) {
+    writeText(PREFIX + 'seen-help', 'yes');
+    setTimeout(() => openDialog('help'), 350);
+  }
+  setInterval(() => {
+    if (istanbulDay().key !== dayInfo.key) initDay();
+    updateCountdown();
+  }, 1000);
+
+  // Test kolaylığı için dışarıdan erişilen, oyunu değiştirmeyen yardımcılar.
+  window.Kelimece = Object.freeze({
+    evaluate,
+    getDay: () => ({ ...dayInfo, wordIndex: ((dayInfo.index % WORDS.length) + WORDS.length) % WORDS.length }),
+    getDictionarySizes: () => ({ answers: DICTIONARY.ANSWERS.length, guesses: DICTIONARY.VALID_GUESSES.length }),
+  });
+})();
+</script>
+</body>
+</html>
